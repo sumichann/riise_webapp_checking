@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Item Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        #display {
+            flex: 1;
+            padding: 20px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            border-bottom: 2px solid #ddd;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            border-radius: 8px;
+        }
+        #image-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 20px;
+            border-top: 2px solid #ddd;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            border-radius: 8px;
+        }
+        #image-container img {
+            max-height: 150px;
+            margin-right: 10px;
+            object-fit: contain;
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+        #image-container img:hover {
+            transform: scale(1.05);
+        }
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            border-top: 2px solid #ddd;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            border-radius: 8px;
+        }
+        .button-row {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .selected {
+            background-color: #28a745 !important;
+        }
+    </style>
+    <script>
+        let currentIndex = 0;
+        const data = {{ data | tojson | safe }};
+        const selections = {
+            size_check: null,
+            component_check: null,
+            wash_check: null
+        };
+
+        function showItem(index) {
+            const displayElement = document.getElementById('display');
+            if (index >= 0 && index < data.length) {
+                const item = data[index];
+                const displayText = `
+                    anon_item_id: ${item.anon_item_id}
+                    description: ${item.description}
+                    size_gpt: ${item.size_gpt}
+                    right_side: ${JSON.stringify(item.right_side, null, 2)}
+                    wrong_side: ${JSON.stringify(item.wrong_side, null, 2)}
+                    washable: ${item.washable}
+                `;
+                displayElement.innerText = displayText;
+
+                // 画像を表示
+                const imageContainer = document.getElementById('image-container');
+                imageContainer.innerHTML = ''; // 既存の画像をクリア
+                fetch(`/get_images/${item.anon_item_id}`)
+                    .then(response => response.json())
+                    .then(images => {
+                        images.forEach(src => {
+                            const img = document.createElement('img');
+                            img.src = src;
+                            img.alt = item.anon_item_id;
+                            imageContainer.appendChild(img);
+                        });
+                    });
+            }
+        }
+
+        function upload() {
+            const currentAnonItemId = "{{ item.anon_item_id }}";
+
+            // Check if all selections are made
+            if (!selections.size_check || !selections.component_check || !selections.wash_check) {
+                alert("Please make a selection for all categories.");
+                return;
+            }
+
+            fetch('/update_item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    anon_item_id: currentAnonItemId,
+                    new_data: selections
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function next() {
+            if (currentIndex < data.length - 1) {
+                currentIndex++;
+                const nextItem = data[currentIndex];
+                window.location.href = `/item/${nextItem.anon_item_id}`;
+            } else {
+                alert("No more items.");
+            }
+        }
+
+        function back() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                const prevItem = data[currentIndex];
+                window.location.href = `/item/${prevItem.anon_item_id}`;
+            }
+        }
+
+        function selectOption(field, value, button) {
+            selections[field] = value;
+            const buttons = button.parentElement.querySelectorAll('button');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+        }
+
+        window.onload = function() {
+            const currentAnonItemId = "{{ item.anon_item_id }}";
+            currentIndex = data.findIndex(item => item.anon_item_id === currentAnonItemId);
+            showItem(currentIndex);
+        }
+    </script>
+</head>
+<body>
+    <div id="display"></div>
+    <div id="image-container"></div>
+    <div class="button-container">
+        <div class="button-row">
+            <div class="button-group">
+                <div>Size Check</div>
+                <button onclick="selectOption('size_check', '1', this)">1</button>
+                <button onclick="selectOption('size_check', '2', this)">2</button>
+                <button onclick="selectOption('size_check', '3', this)">3</button>
+            </div>
+            <div class="button-group">
+                <div>Component Check</div>
+                <button onclick="selectOption('component_check', '1', this)">1</button>
+                <button onclick="selectOption('component_check', '2', this)">2</button>
+                <button onclick="selectOption('component_check', '3', this)">3</button>
+            </div>
+            <div class="button-group">
+                <div>Wash Check</div>
+                <button onclick="selectOption('wash_check', '1', this)">1</button>
+                <button onclick="selectOption('wash_check', '2', this)">2</button>
+                <button onclick="selectOption('wash_check', '3', this)">3</button>
+            </div>
+        </div>
+        <div class="button-group">
+            <button onclick="upload()">upload</button>
+        </div>
+        <div class="button-row">
+            <button onclick="back()">back</button>
+            <button onclick="next()">next</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>JSON Viewer</title>
+    <script>
+        const data = {{ data | tojson | safe }};
+
+        function start() {
+            if (data.length > 0) {
+                const firstItem = data[0];
+                window.location.href = `/item/${firstItem.anon_item_id}`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>JSON Viewer</h1>
+    <p>データを表示するには「次へ」をクリックしてください。</p>
+    <button onclick="start()">次へ</button>
+</body>
+</html>
