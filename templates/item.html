@@ -86,101 +86,37 @@
         }
     </style>
     <script>
-        let currentIndex = 0;
-        const data = {{ data | tojson | safe }};
-        const selections = {
-            size_check: null,
-            component_check: null,
-            wash_check: null
-        };
-
-        function showItem(index) {
+        const item = {{ item | tojson | safe }};
+    
+        function showItem() {
             const displayElement = document.getElementById('display');
-            if (index >= 0 && index < data.length) {
-                const item = data[index];
-                const displayText = `
-                    anon_item_id: ${item.anon_item_id}
-                    description: ${item.description}
-                    size_gpt: ${item.size_gpt}
-                    right_side: ${JSON.stringify(item.right_side, null, 2)}
-                    wrong_side: ${JSON.stringify(item.wrong_side, null, 2)}
-                    washable: ${item.washable}
-                `;
-                displayElement.innerText = displayText;
-
-                // 画像を表示
-                const imageContainer = document.getElementById('image-container');
-                imageContainer.innerHTML = ''; // 既存の画像をクリア
-                fetch(`/get_images/${item.anon_item_id}`)
-                    .then(response => response.json())
-                    .then(images => {
-                        images.forEach(src => {
-                            const img = document.createElement('img');
-                            img.src = src;
-                            img.alt = item.anon_item_id;
-                            imageContainer.appendChild(img);
-                        });
+            const displayText = `
+                Index: ${item["Index"]}
+                Item ID: ${item["Item ID"]}
+                Description: ${item["Description"]}
+                Right Side Composition: ${item["Right Side Composition"]}
+                Wrong Side Composition: ${item["Wrong Side Composition"]}
+                Washable: ${item["Washable"]}
+            `;
+            displayElement.innerText = displayText;
+    
+            // 画像を表示
+            const imageContainer = document.getElementById('image-container');
+            imageContainer.innerHTML = ''; // 既存の画像をクリア
+            fetch(`/get_images/${item["Item ID"]}`)
+                .then(response => response.json())
+                .then(images => {
+                    images.forEach(src => {
+                        const img = document.createElement('img');
+                        img.src = src;
+                        img.alt = item["Index"];
+                        imageContainer.appendChild(img);
                     });
-            }
+                });
         }
-
-        function upload() {
-            const currentAnonItemId = "{{ item.anon_item_id }}";
-
-            // Check if all selections are made
-            if (!selections.size_check || !selections.component_check || !selections.wash_check) {
-                alert("Please make a selection for all categories.");
-                return;
-            }
-
-            fetch('/update_item', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    anon_item_id: currentAnonItemId,
-                    new_data: selections
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-
-        function next() {
-            if (currentIndex < data.length - 1) {
-                currentIndex++;
-                const nextItem = data[currentIndex];
-                window.location.href = `/item/${nextItem.anon_item_id}`;
-            } else {
-                alert("No more items.");
-            }
-        }
-
-        function back() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                const prevItem = data[currentIndex];
-                window.location.href = `/item/${prevItem.anon_item_id}`;
-            }
-        }
-
-        function selectOption(field, value, button) {
-            selections[field] = value;
-            const buttons = button.parentElement.querySelectorAll('button');
-            buttons.forEach(btn => btn.classList.remove('selected'));
-            button.classList.add('selected');
-        }
-
+    
         window.onload = function() {
-            const currentAnonItemId = "{{ item.anon_item_id }}";
-            currentIndex = data.findIndex(item => item.anon_item_id === currentAnonItemId);
-            showItem(currentIndex);
+            showItem();
         }
     </script>
 </head>
