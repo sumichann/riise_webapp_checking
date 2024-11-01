@@ -87,7 +87,8 @@
     </style>
     <script>
         const item = {{ item | tojson | safe }};
-    
+
+
         function showItem() {
             const displayElement = document.getElementById('display');
             const displayText = `
@@ -118,6 +119,59 @@
         window.onload = function() {
             showItem();
         }
+
+        function upload() {
+            const currentAnonItemId = "{{ item.anon_item_id }}";
+
+            // Check if all selections are made
+            if (!selections.size_check || !selections.component_check || !selections.wash_check) {
+                alert("Please make a selection for all categories.");
+                return;
+            }
+
+            fetch('/update_item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    anon_item_id: currentAnonItemId,
+                    new_data: selections
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function next() {
+            if (item["Index"] != 2499) {
+                window.location.href = `/item/${item["Index"] + 1}`;
+            } else {
+                alert("No more items.");
+            }
+        }
+
+
+        function back() {
+            if (item["Index"] != 0) {
+                window.location.href = `/item/${item["Index"] - 1}`;
+            } else {
+                alert("No more items.");
+            }
+        }
+
+        function selectOption(field, value, button) {
+            selections[field] = value;
+            const buttons = button.parentElement.querySelectorAll('button');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+        }
+
     </script>
 </head>
 <body>
