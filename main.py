@@ -9,14 +9,27 @@ from pydantic import BaseModel
 import glob
 import threading  # threadingモジュールをインポート
 from notion_client import Client
+import requests
+
 
 # .envファイルを読み込む
 load_dotenv()
 
 # Notion APIの設定
-notion = Client(auth=os.getenv("NOTION_API_KEY"))
+notion_api_key = os.getenv("NOTION_API_KEY")
+notion = Client(auth=notion_api_key)
 DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
+headers = {
+    "Authorization": f"Bearer {notion_api_key}",
+    "Content-Type": "application/json",
+    "Notion-Version": "2022-06-28"
+}
 
+class UpdateProperties(BaseModel):
+    index: int
+    new_property_1: str
+    new_property_2: str
+    new_property_3: str
 
 
 # テンプレートの設定
@@ -67,28 +80,34 @@ async def read_root(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
-@app.post("/update_item")
-async def update_item(update: UpdateItem):
-    try:
-        with file_lock:  # ファイルロックを使用
-            with open("sample.json", "r+", encoding='utf-8') as f:
-                data = json.load(f)
-                for item in data:
-                    if item["anon_item_id"] == update.anon_item_id:
-                        print("aaaaaaaaaaa")
-                        item.update(update.new_data)
-                        break
-                else:
-                    raise HTTPException(status_code=404, detail="Item not found")
-                print("aaaa")
-                f.seek(0)
-                print("a")
-                json.dump(data, f, ensure_ascii=False, indent=4)
-                f.truncate()
-        return {"message": "Item updated successfully"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/update_properties")
+def update_properties(data: UpdateProperties):
+    # NotionのページIDを取得
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    response = requests.post(url, headers=headers, json={"filter": {"property": "Index", "number": {"equals": data.index}}})
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Failed to retrieve Notion page.")
+    
+    result = response.json()["results"]
+    if not result:
+        raise HTTPException(status_code=404, detail="Index not found in NotionDB.")
+    
+    page_id = result[0]["id"]
+    
+    # プロパティを更新
+    update_url = f"https://api.notion.com/v1/pages/{page_id}"
+    payload = {
+        "properties": {
+            "Composition Check": {"rich_text": [{"text": {"content": data.new_property_1}}]},
+            "Size Check": {"rich_text": [{"text": {"content": data.new_property_2}}]},
+            "Wash Check": {"rich_text": [{"text": {"content": data.new_property_3}}]}
+        }
+    }
+    update_response = requests.patch(update_url, headers=headers, json=payload)
+    if update_response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Failed to update Notion page.")
+    
+    return {"message": "Properties updated successfully"}
 
 @app.get("/item/{index}", response_class=HTMLResponse)
 async def show_item(request: Request, index: str):

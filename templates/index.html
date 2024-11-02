@@ -43,7 +43,7 @@
             const itemWithIndexZero = data.find(item => item["Index"] === 0);
             if (itemWithIndexZero) {
                 // Item ID を使用して次のページへ移動
-                window.location.href = `/item/${itemWithIndexZero["Item ID"]}`;
+                window.location.href = `/item/${itemWithIndexZero["Index"]}`;
             } else {
                 alert("Indexが0のアイテムが見つかりませんでした。");
             }
