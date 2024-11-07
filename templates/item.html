@@ -36,7 +36,7 @@
             border-radius: 8px;
         }
         #image-container img {
-            max-height: 150px;
+            max-height: 250px;
             margin-right: 10px;
             object-fit: contain;
             border-radius: 4px;
@@ -84,12 +84,28 @@
         .selected {
             background-color: #28a745 !important;
         }
+        #home-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #home-button:hover {
+            background-color: #0056b3;
+        }
     </style>
     <script>
         const item = {{ item | tojson | safe }};
         const selections = {}; // selectionsオブジェクトを初期化
 
-        
+
         function showItem() {
             const displayElement = document.getElementById('display');
             const displayText = `
@@ -177,30 +193,35 @@
             button.classList.add('selected');
         }
 
+        function home() {
+            window.location.href = '/';
+        }
+
     </script>
 </head>
 <body>
+    <button id="home-button" onclick="home()">home</button> <!-- 右上に配置されたhomeボタン -->
     <div id="display"></div>
     <div id="image-container"></div>
     <div class="button-container">
         <div class="button-row">
             <div class="button-group">
                 <div>Size Check</div>
-                <button onclick="selectOption('size_check', '1', this)">1</button>
-                <button onclick="selectOption('size_check', '2', this)">2</button>
-                <button onclick="selectOption('size_check', '3', this)">3</button>
+                <button onclick="selectOption('size_check', '1', this)">⚪︎(表記あり)</button>
+                <button onclick="selectOption('size_check', '2', this)">×(表記あり,nd)</button>
+                <button onclick="selectOption('size_check', '3', this)">-(そもそもnd)</button>
             </div>
             <div class="button-group">
                 <div>Component Check</div>
-                <button onclick="selectOption('component_check', '1', this)">1</button>
-                <button onclick="selectOption('component_check', '2', this)">2</button>
-                <button onclick="selectOption('component_check', '3', this)">3</button>
+                <button onclick="selectOption('component_check', '1', this)">⚪︎(表記あり)</button>
+                <button onclick="selectOption('component_check', '2', this)">×(表記あり,nd)</button>
+                <button onclick="selectOption('component_check', '3', this)">-(そもそもnd)</button>
             </div>
             <div class="button-group">
                 <div>Wash Check</div>
-                <button onclick="selectOption('wash_check', '1', this)">1</button>
-                <button onclick="selectOption('wash_check', '2', this)">2</button>
-                <button onclick="selectOption('wash_check', '3', this)">3</button>
+                <button onclick="selectOption('wash_check', '1', this)">⚪︎(表記あり)</button>
+                <button onclick="selectOption('wash_check', '2', this)">×(表記あり,nd)</button>
+                <button onclick="selectOption('wash_check', '3', this)">-(そもそもnd)</button>
             </div>
         </div>
         <div class="button-group">

@@ -1,5 +1,7 @@
-fastapi 
-uvicorn
-jinja2
+fastapi
+python-dotenv
 pydantic
+notion-client
 requests
+jinja2
+uvicorn

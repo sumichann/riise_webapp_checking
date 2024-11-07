@@ -36,23 +36,80 @@
         button:hover {
             background-color: #0056b3;
         }
+        .input-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type="number"]:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            outline: none;
+        }
     </style>
     <script>
-        const data = {{ data | tojson | safe }};
         function start() {
-            const itemWithIndexZero = data.find(item => item["Index"] === 0);
-            if (itemWithIndexZero) {
-                // Item ID を使用して次のページへ移動
-                window.location.href = `/item/${itemWithIndexZero["Index"]}`;
+            window.location.href = `/item/0`;
+        }
+        function startWithIndex() {
+            const index = document.getElementById('itemIndex').value;
+            if (index !== '') {
+                window.location.href = `/item/${index}`;
             } else {
-                alert("Indexが0のアイテムが見つかりませんでした。");
+                alert("アイテム番号を入力してください。");
             }
         }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const input = document.getElementById("itemIndex");
+            const button = document.querySelector("button");
+            input.addEventListener("keydown", function(event) {
+                if (event.key === "Enter") {
+                    startWithIndex();
+                    button.style.backgroundColor = "#0056b3"; // 色を変える
+                    // 少し遅れてstartWithIndexを呼び出す
+                    setTimeout(() => {
+                        startWithIndex();
+                        button.style.backgroundColor = "#007bff"; // 元の色に戻す
+                    }, 1000); // 1000ミリ秒の遅延
+                }
+
+            });
+        });
+
     </script>
 </head>
 <body>
-    <h1>JSON Viewer</h1>
-    <p>データを表示するには「次へ」をクリックしてください。</p>
-    <button onclick="start()">次へ</button>
+    <h1>画像と推計結果に関する正誤判断</h1>
+    <p>データを表示するには指定されたindexを入力して「指定のアイテムへ」をクリックしてください。</p>
+    <ul>
+        <li>すべての選択肢を選んでから「upload」をクリックしてください。</li>
+        <li>「next」ボタンをクリックすると、次のアイテムが表示されます。</li>
+        <li>「back」ボタンをクリックすると、前のアイテムに戻ります。</li>
+        <li>選択肢を変更する場合は、再度ボタンをクリックし、「upload」を再度クリックしてください。</li>
+
+        <li><strong>⚪︎(表記あり):</strong> 画像に該当パラメータが表記されており、正しく推計されている。</li>
+        <li><strong>×(表記あり,nd):</strong> 間違って推計されている。(表記されているかどうか関わらず)</li>
+        <li><strong>-(そもそもnd):</strong> 画像に該当パラメータが表記されておらず、推計結果もndになっている。</li>
+
+        <li>表示したいアイテムの番号を入力してください。</li>
+        <div class="input-container">
+            <input type="number" id="itemIndex" min="0"　placeholder="アイテム番号">
+        </div>
+        <button onclick="startWithIndex()">指定のアイテムへ</button>
+
+
+    </ul>
 </body>
 </html>

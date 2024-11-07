@@ -51,33 +51,31 @@ class UpdateItem(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    try:
-        all_data = []
-        next_cursor = None
+    # try:
+    #     all_data = []
+    #     next_cursor = None
 
-        while True:
-            response = notion.databases.query(
-                database_id=DATABASE_ID,
-                start_cursor=next_cursor
-            )
-            data = [{
-                "Index": item["properties"]["Index"]["number"],
-                "Item ID": item["properties"]["Item ID"]["rich_text"][0]["text"]["content"],
-                "Description": item["properties"]["Description"]["rich_text"][0]["text"]["content"],
-                "Right Side Composition": json.dumps(json.loads(item["properties"]["Right Side Composition"]["rich_text"][0]["text"]["content"].encode().decode('unicode_escape')), ensure_ascii=False),  # JSON文字列に変換
-                "Wrong Side Composition": json.dumps(json.loads(item["properties"]["Wrong Side Composition"]["rich_text"][0]["text"]["content"].encode().decode('unicode_escape')), ensure_ascii=False),  # JSON文字列に変換
-                "Washable": item["properties"]["Washable"]["rich_text"][0]["text"]["content"]
-            } for item in response["results"]]
+    #     while True:
+    #         response = notion.databases.query(
+    #             database_id=DATABASE_ID,
+    #             start_cursor=next_cursor
+    #         )
+    #         data = [{
+    #             "Index": item["properties"]["Index"]["number"],
+    #             "Item ID": item["properties"]["Item ID"]["rich_text"][0]["text"]["content"],
+    #             "Description": item["properties"]["Description"]["rich_text"][0]["text"]["content"],
+    #             "Right Side Composition": json.dumps(json.loads(item["properties"]["Right Side Composition"]["rich_text"][0]["text"]["content"].encode().decode('unicode_escape')), ensure_ascii=False),  # JSON文字列に変換
+    #             "Wrong Side Composition": json.dumps(json.loads(item["properties"]["Wrong Side Composition"]["rich_text"][0]["text"]["content"].encode().decode('unicode_escape')), ensure_ascii=False),  # JSON文字列に変換
+    #             "Washable": item["properties"]["Washable"]["rich_text"][0]["text"]["content"]
+    #         } for item in response["results"]]
 
-            all_data.extend(data)
+    #         all_data.extend(data)
 
-            if not response.get("has_more"):
-                break
-            next_cursor = response.get("next_cursor")
+    #         if not response.get("has_more"):
+    #             break
+    #         next_cursor = response.get("next_cursor")
 
-        return templates.TemplateResponse("index.html", {"request": request, "data": all_data})
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.post("/update_properties")
