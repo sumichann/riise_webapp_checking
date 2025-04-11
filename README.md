@@ -2,6 +2,6 @@
 notionDBに回答者の回答内容を反映
 
 ## 使用フレームワーク
-notion DB
-fast api 
-S3
+- notion DB
+- fast api 
+- S3
