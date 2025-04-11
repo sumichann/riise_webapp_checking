@@ -100,6 +100,51 @@
         #home-button:hover {
             background-color: #0056b3;
         }
+        .uniform-button {
+        width: 50px; /* ボタンの幅 */
+        height: 40px; /* ボタンの高さ */
+        font-size: 20px; /* フォントサイズを調整 */
+        font-family: "Arial", sans-serif; /* フォントファミリーを指定 */
+        text-align: center; /* テキストを中央揃え */
+        line-height: 40px; /* ボタンの高さと同じにして垂直中央揃え */
+        }
+        .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        padding-top: 100px;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.9);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
     <script>
         const item = {{ item | tojson | safe }};
@@ -107,41 +152,124 @@
 
 
         function showItem() {
-            const displayElement = document.getElementById('display');
-            const displayText = `
-                Index: ${item["Index"]}
-                Item ID: ${item["Item ID"]}
-                Description: ${item["Description"]}
-                Right Side Composition: ${item["Right Side Composition"]}
-                Wrong Side Composition: ${item["Wrong Side Composition"]}
-                Washable: ${item["Washable"]}
-            `;
-            displayElement.innerText = displayText;
-    
-            // 画像を表示
-            const imageContainer = document.getElementById('image-container');
-            imageContainer.innerHTML = ''; // 既存の画像をクリア
-            fetch(`/get_images/${item["Item ID"]}`)
-                .then(response => response.json())
-                .then(images => {
-                    images.forEach(src => {
-                        const img = document.createElement('img');
-                        img.src = src;
-                        img.alt = item["Index"];
-                        imageContainer.appendChild(img);
-                    });
-                });
+        const displayElement = document.getElementById('display');
+
+        // 元情報(文章)を表示
+        const displayText = `
+            <table style="border-collapse: collapse; width: 100%;">
+                <caption style="caption-side: top; text-align: left; font-weight: bold; padding: 8px;">元情報(文章)</caption>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><strong>Index:</strong></td>
+                    <td style="padding: 8px;">${item["Index"]}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><strong>Item ID:</strong></td>
+                    <td style="padding: 8px;">${item["Item ID"]}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><strong>Description:</strong></td>
+                    <td style="padding: 8px;">${item["Description"]}</td>
+                </tr>
+            </table>
+        `;
+        displayElement.innerHTML = displayText;
+
+        // 元情報(商品画像)を表示
+        const imageContainer = document.getElementById('image-container');
+        imageContainer.innerHTML = ''; // 既存の画像をクリア
+        const titleElement = document.createElement('h2');
+        titleElement.textContent = '元情報(商品画像)';
+        titleElement.style.fontSize = '14px'; // フォントサイズを小さく設定
+        imageContainer.appendChild(titleElement);
+        fetch(`/get_images/${item["Item ID"]}`)
+        .then(response => response.json())
+        .then(images => {
+            images.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.alt = item["Index"];
+                img.style.cursor = 'pointer'; // クリック可能であることを示す
+                img.onclick = function() {
+                    const modal = document.getElementById('imageModal');
+                    const modalImg = document.getElementById('modalImage');
+                    modal.style.display = 'block';
+                    modalImg.src = this.src;
+                };
+                imageContainer.appendChild(img);
+            });
+        });
+
+        // GPTによる推計結果を表示
+        const displayElement_2 = document.createElement('div');
+        const displayText_2 = `
+            <table style="border-collapse: collapse; width: 100%;">
+                <caption style="caption-side: top; text-align: left; font-weight: bold; padding: 8px;">GPTによる推計結果</caption>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><strong>Size:</strong></td>
+                    <td style="padding: 8px;">${item["Size GPT"]}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><strong>Right Side Composition:</strong></td>
+                    <td style="padding: 8px;">${item["Right Side Composition"]}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><strong>Wrong Side Composition:</strong></td>
+                    <td style="padding: 8px;">${item["Wrong Side Composition"]}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><strong>Washable:</strong></td>
+                    <td style="padding: 8px;">${item["Washable"]}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td colspan="2" style="padding: 8px;"><em>注: 1 = 水洗い可能, 2 = 水洗い不可</em></td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><strong>Number of Uses:</strong></td>
+                    <td style="padding: 8px;">${item["Number of Uses"]}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 8px;"><strong>Evidence by GPT:</strong></td>
+                    <td style="padding: 8px;">${item["Evidence by GPT"]}</td>
+                </tr>
+            </table>
+        `;
+        displayElement_2.innerHTML = displayText_2;
+        // displayElementの後にdisplayElement_2を追加
+        displayElement.parentNode.insertBefore(displayElement_2, imageContainer.nextSibling);
+        
+        
+         // 拡大画像をクリックすると回転する機能
+        let rotation = 0; // 初期回転角度
+        const modalImg = document.getElementById('modalImage');
+        modalImg.onclick = function() {
+            rotation = (rotation + 90) % 360; // 90度ずつ回転
+            modalImg.style.transform = `rotate(${rotation}deg)`;
+        };
+
+        // モーダルを閉じるためのイベントリスナー
+        const modal = document.getElementById('imageModal');
+        const span = document.getElementsByClassName('close')[0];
+        span.onclick = function() {
+            modal.style.display = 'none';
+        };
+        // モーダルの背景をクリックしたときにモーダルを閉じる
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
         }
-    
         window.onload = function() {
             showItem();
         }
+        // uploadしたかどうか確認する変数
+        let  isUploaded = false;
 
         function upload() {
             const Index = item["Index"];
 
             // Check if all selections are made
-            if (!selections.size_check || !selections.component_check || !selections.wash_check) {
+            if (!selections.size_check || !selections.component_check || !selections.wash_check || !selections.uses_check) {
                 alert("Please make a selection for all categories.");
                 return;
             }
@@ -156,12 +284,14 @@
                     "index": Index,
                     "new_property_1": selections['component_check'],
                     "new_property_2": selections['size_check'],
-                    "new_property_3": selections['wash_check']      
+                    "new_property_3": selections['wash_check'],
+                    "new_property_4": selections['uses_check'],    
                 })
             })
             .then(response => response.json())
             .then(data => {
                 alert(data.message);
+                isUploaded = true; // アップロードが成功したらフラグをtrueに設定
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -169,6 +299,13 @@
         }
 
         function next() {
+            // for debug
+            // if (!isUploaded) {
+            //     //uploadしないと次に進めない
+            //     alert("Please upload before proceeding to the next item.");
+            //     return;
+            // }
+
             if (item["Index"] != 2499) {
                 window.location.href = `/item/${item["Index"] + 1}`;
             } else {
@@ -200,6 +337,11 @@
     </script>
 </head>
 <body>
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage"　style="max-width: 100%; max-height: 100%; cursor: pointer;">
+    </div>
+
     <button id="home-button" onclick="home()">home</button> <!-- 右上に配置されたhomeボタン -->
     <div id="display"></div>
     <div id="image-container"></div>
@@ -207,21 +349,27 @@
         <div class="button-row">
             <div class="button-group">
                 <div>Size Check</div>
-                <button onclick="selectOption('size_check', '1', this)">⚪︎(表記あり)</button>
-                <button onclick="selectOption('size_check', '2', this)">×(表記あり,nd)</button>
-                <button onclick="selectOption('size_check', '3', this)">-(そもそもnd)</button>
+                <button class="uniform-button" onclick="selectOption('size_check', '1', this)">&cir;</button>
+                <button class="uniform-button" onclick="selectOption('size_check', '2', this)">&times;</button>
+                <button class="uniform-button" onclick="selectOption('size_check', '3', this)">-</button>
             </div>
             <div class="button-group">
-                <div>Component Check</div>
-                <button onclick="selectOption('component_check', '1', this)">⚪︎(表記あり)</button>
-                <button onclick="selectOption('component_check', '2', this)">×(表記あり,nd)</button>
-                <button onclick="selectOption('component_check', '3', this)">-(そもそもnd)</button>
+                <div>Composition Check</div>
+                <button class="uniform-button" onclick="selectOption('component_check', '1', this)">&cir;</button>
+                <button class="uniform-button" onclick="selectOption('component_check', '2', this)">&times;</button>
+                <button class="uniform-button" onclick="selectOption('component_check', '3', this)">-</button>
             </div>
             <div class="button-group">
                 <div>Wash Check</div>
-                <button onclick="selectOption('wash_check', '1', this)">⚪︎(表記あり)</button>
-                <button onclick="selectOption('wash_check', '2', this)">×(表記あり,nd)</button>
-                <button onclick="selectOption('wash_check', '3', this)">-(そもそもnd)</button>
+                <button class="uniform-button" onclick="selectOption('wash_check', '1', this)">&cir;</button>
+                <button class="uniform-button" onclick="selectOption('wash_check', '2', this)">&times;</button>
+                <button class="uniform-button" onclick="selectOption('wash_check', '3', this)">-</button>
+            </div>
+            <div class="button-group">
+                <div>Uses Check</div>
+                <button class="uniform-button" onclick="selectOption('uses_check', '1', this)">&cir;</button>
+                <button class="uniform-button" onclick="selectOption('uses_check', '2', this)">&triangle;</button>
+                <button class="uniform-button" onclick="selectOption('uses_check', '3', this)">-</button>
             </div>
         </div>
         <div class="button-group">

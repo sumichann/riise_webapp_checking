@@ -1,0 +1,6 @@
+#s3の使用に切り替えゆえ
+test_photos/
+upload_to_s3.ipynb
+static/
+get_photo.ipynb
+

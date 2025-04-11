@@ -62,10 +62,28 @@
         function start() {
             window.location.href = `/item/0`;
         }
-        function startWithIndex() {
+        function startWithIndex(type) {
             const index = document.getElementById('itemIndex').value;
             if (index !== '') {
-                window.location.href = `/item/${index}`;
+                let endpoint;
+                switch (type) {
+                    case 'size':
+                        endpoint = `/size/item/${index}`;
+                        break;
+                    case 'composition':
+                        endpoint = `/composition/item/${index}`;
+                        break;
+                    case 'wash':
+                        endpoint = `/wash/item/${index}`;
+                        break;
+                    case 'uses':
+                        endpoint = `/uses/item/${index}`;
+                        break;
+                    default:
+                        alert("不明なタイプです。");
+                        return;
+                }
+                window.location.href = endpoint;
             } else {
                 alert("アイテム番号を入力してください。");
             }
@@ -98,17 +116,17 @@
         <li>「next」ボタンをクリックすると、次のアイテムが表示されます。</li>
         <li>「back」ボタンをクリックすると、前のアイテムに戻ります。</li>
         <li>選択肢を変更する場合は、再度ボタンをクリックし、「upload」を再度クリックしてください。</li>
-
-        <li><strong>⚪︎(表記あり):</strong> 画像に該当パラメータが表記されており、正しく推計されている。</li>
-        <li><strong>×(表記あり,nd):</strong> 間違って推計されている。(表記されているかどうか関わらず)</li>
-        <li><strong>-(そもそもnd):</strong> 画像に該当パラメータが表記されておらず、推計結果もndになっている。</li>
+    <br>
 
         <li>表示したいアイテムの番号を入力してください。</li>
         <div class="input-container">
             <input type="number" id="itemIndex" min="0"　placeholder="アイテム番号">
         </div>
-        <button onclick="startWithIndex()">指定のアイテムへ</button>
-
+        <button onclick="startWithIndex('size')">サイズの正誤判断へ</button>
+        <button onclick="startWithIndex('composition')">成分の正誤判断へ</button>
+        <button onclick="startWithIndex('wash')">洗濯表示の正誤判断へ</button>
+        <button onclick="startWithIndex('uses')">使用回数の正誤判断へ</button>
+          
 
     </ul>
 </body>

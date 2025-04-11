@@ -5,3 +5,4 @@ notion-client
 requests
 jinja2
 uvicorn
+boto3
